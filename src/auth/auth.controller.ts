@@ -1,32 +1,29 @@
-import { Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { Request as IRequest } from 'express';
+import { User } from '../users/entities/user.entity';
+import { LocalGuard } from './guards/local-auth.guard';
 
-@Controller('auth')
+interface SignInRequest extends IRequest {
+  user: User;
+}
+
+@Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post()
-  create() {
-    return this.authService.create();
+  @Post('signup')
+  async signup(@Body() createUserDto: CreateUserDto) {
+    const user = await this.authService.signup(createUserDto);
+    const { password: _password, email: _email, ...returnedUser } = user;
+
+    return returnedUser;
   }
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string) {
-    return this.authService.update(+id);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+  @UseGuards(LocalGuard)
+  @Post('signin')
+  signin(@Request() req: SignInRequest) {
+    return this.authService.auth(req.user);
   }
 }

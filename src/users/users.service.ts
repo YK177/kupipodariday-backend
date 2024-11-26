@@ -1,26 +1,70 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { Repository, QueryFailedError, Like } from 'typeorm';
+import * as bcrypt from 'bcrypt';
+import { ERROR_MESSAGES } from '../constants/error-messages';
+import { Wish } from '../wishes/entities/wish.entity';
+
+const SALT_ROUNDS = 10;
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+  ) {}
+
+  private hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, SALT_ROUNDS);
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async create(dto: CreateUserDto): Promise<User> {
+    const hashedPassword = await this.hashPassword(dto.password);
+    return await this.usersRepository.save({
+      ...dto,
+      password: hashedPassword,
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne<T extends keyof User>(key: T, param: User[T]): Promise<User> {
+    return await this.usersRepository.findOneBy({ [key]: param });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async updateOne(user: User, dto: UpdateUserDto): Promise<User> {
+    const { id } = user;
+
+    const updatedUser = { ...dto };
+
+    if ('password' in dto) {
+      updatedUser.password = await this.hashPassword(dto.password);
+    }
+
+    try {
+      await this.usersRepository.update(id, updatedUser);
+      return await this.usersRepository.findOneBy({ id });
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        throw new ConflictException(ERROR_MESSAGES.USER_EXISTS);
+      }
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async findMany(query: string): Promise<User[]> {
+    return await this.usersRepository.find({
+      where: [{ username: Like(`%${query}%`) }, { email: Like(`%${query}%`) }],
+    });
+  }
+
+  async findUserWishes(username: string): Promise<Wish[]> {
+    const user = await this.findOne('username', username);
+    return user.wishes ?? [];
   }
 }
