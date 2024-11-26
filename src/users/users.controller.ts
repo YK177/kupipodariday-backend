@@ -1,42 +1,69 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
+  NotFoundException,
   Param,
-  Delete,
+  Patch,
+  Post,
+  Request,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UsersInterceptor } from './interceptors/users.interceptor';
+import { Request as IRequest } from 'express';
+import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ERROR_MESSAGES } from '../constants/error-messages';
+
+interface UserRequest extends IRequest {
+  user: User;
+}
 
 @Controller('users')
+@UseInterceptors(UsersInterceptor)
+@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  @Get('me')
+  findMe(@Request() { user }: UserRequest) {
+    return user;
   }
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
+  @Patch('me')
+  update(
+    @Request() { user }: UserRequest,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.updateOne(user, updateUserDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @Get(':username')
+  async getUserByUsername(@Param('username') username: string) {
+    const user = await this.usersService.findOne('username', username);
+
+    if (!user) {
+      throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND);
+    }
+
+    return user;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  @Post('find')
+  async findMany(@Body('query') query: string) {
+    return this.usersService.findMany(query);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @Get('me/wishes')
+  getOwnWishes(@Request() { user }: UserRequest) {
+    return user.wishes ?? [];
+  }
+
+  @Get(':username/wishes')
+  async getUserWishes(@Param('username') username: string) {
+    return await this.usersService.findUserWishes(username);
   }
 }

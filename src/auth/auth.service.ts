@@ -1,24 +1,53 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { UsersService } from '../users/users.service';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { User } from '../users/entities/user.entity';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { ERROR_MESSAGES } from '../constants/error-messages';
 
 @Injectable()
 export class AuthService {
-  create() {
-    return 'This action adds a new auth';
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
+
+  async signup(dto: CreateUserDto): Promise<User> {
+    const [existUserByName, existUserByEmail] = await Promise.all([
+      this.usersService.findOne('username', dto.username),
+      this.usersService.findOne('email', dto.email),
+    ]);
+
+    if (existUserByName || existUserByEmail) {
+      throw new ConflictException(ERROR_MESSAGES.USER_EXISTS);
+    }
+
+    return this.usersService.create(dto);
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  auth(user: User) {
+    const payload = { usernane: user.username, sub: user.id };
+    return { access_token: this.jwtService.sign(payload) };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+  async validatePassword(username: string, password: string) {
+    const user = await this.usersService.findOne('username', username);
 
-  update(id: number) {
-    return `This action updates a #${id} auth`;
-  }
+    if (!user) {
+      throw new UnauthorizedException(ERROR_MESSAGES.WRONG_LOGIN_PASSWORD);
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    const matched = await bcrypt.compare(password, user.password);
+
+    if (!matched) {
+      throw new UnauthorizedException(ERROR_MESSAGES.WRONG_LOGIN_PASSWORD);
+    }
+
+    return user;
   }
 }
