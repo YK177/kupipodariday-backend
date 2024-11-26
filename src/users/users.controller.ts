@@ -13,14 +13,9 @@ import {
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UsersInterceptor } from './interceptors/users.interceptor';
-import { Request as IRequest } from 'express';
-import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ERROR_MESSAGES } from '../constants/error-messages';
-
-interface UserRequest extends IRequest {
-  user: User;
-}
+import { UserRequest } from '../types';
 
 @Controller('users')
 @UseInterceptors(UsersInterceptor)
@@ -59,7 +54,7 @@ export class UsersController {
 
   @Get('me/wishes')
   getOwnWishes(@Request() { user }: UserRequest) {
-    return user.wishes ?? [];
+    return this.usersService.findOwnWishes(user.id);
   }
 
   @Get(':username/wishes')

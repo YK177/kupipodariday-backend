@@ -1,13 +1,8 @@
 import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
-import { Request as IRequest } from 'express';
-import { User } from '../users/entities/user.entity';
 import { LocalGuard } from './guards/local-auth.guard';
-
-interface SignInRequest extends IRequest {
-  user: User;
-}
+import { UserRequest } from '../types';
 
 @Controller()
 export class AuthController {
@@ -23,7 +18,7 @@ export class AuthController {
 
   @UseGuards(LocalGuard)
   @Post('signin')
-  signin(@Request() req: SignInRequest) {
-    return this.authService.auth(req.user);
+  signin(@Request() { user }: UserRequest) {
+    return this.authService.auth(user);
   }
 }

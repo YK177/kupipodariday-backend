@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { IsUrl, Length } from 'class-validator';
+import { IsNumber, IsUrl, Length } from 'class-validator';
 import { User } from '../../users/entities/user.entity';
 import { Offer } from '../../offers/entities/offer.entity';
 
@@ -46,6 +46,7 @@ export class Wish {
   @Column({
     type: 'decimal',
     scale: 2,
+    default: 0,
   })
   raised: number;
 
@@ -63,5 +64,6 @@ export class Wish {
   offers: Offer[];
 
   @Column({ type: 'int', default: 0 })
+  @IsNumber()
   copied: number;
 }

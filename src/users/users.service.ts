@@ -7,7 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository, QueryFailedError, Like } from 'typeorm';
+import { Like, QueryFailedError, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ERROR_MESSAGES } from '../constants/error-messages';
 import { Wish } from '../wishes/entities/wish.entity';
@@ -63,8 +63,20 @@ export class UsersService {
     });
   }
 
+  async findOwnWishes(userId: number) {
+    const user = await this.usersRepository.findOne({
+      relations: ['wishes'],
+      where: { id: userId },
+    });
+
+    return user?.wishes ?? [];
+  }
+
   async findUserWishes(username: string): Promise<Wish[]> {
-    const user = await this.findOne('username', username);
+    const user = await this.usersRepository.findOne({
+      relations: ['wishes'],
+      where: { username },
+    });
     return user.wishes ?? [];
   }
 }
