@@ -21,13 +21,13 @@ export class WishesInterceptor implements NestInterceptor {
     if (Array.isArray(data)) {
       for (const wish of data) {
         this.deleteFields(wish?.owner);
-        wish.offers.forEach((offer: Offer) => {
+        wish?.offers?.forEach((offer: Offer) => {
           this.deleteFields(offer?.user);
         });
       }
     } else {
       this.deleteFields(data?.owner);
-      data.offers.forEach((offer: Offer) => {
+      data?.offers?.forEach((offer: Offer) => {
         this.deleteFields(offer?.user);
       });
     }

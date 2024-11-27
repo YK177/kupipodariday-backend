@@ -2,8 +2,9 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -31,8 +32,9 @@ export class Wishlist {
 
   @Column({
     type: 'varchar',
-    length: 1500,
+    nullable: true,
   })
+  @Length(0, 1500)
   description: string;
 
   @Column()
@@ -42,6 +44,7 @@ export class Wishlist {
   @ManyToOne(() => User, (user) => user.wishlists)
   owner: User;
 
-  @OneToMany(() => Wish, (wish) => wish.id)
+  @ManyToMany(() => Wish)
+  @JoinTable()
   items: Wish[];
 }

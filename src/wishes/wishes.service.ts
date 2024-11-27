@@ -94,6 +94,10 @@ export class WishesService {
 
   async copy(user: User, id: number): Promise<Wish> {
     const wishToCopy = await this.wishRepository.findOneBy({ id });
+    await this.wishRepository.save({
+      ...wishToCopy,
+      copied: wishToCopy.copied + 1,
+    });
     return this.copyWish(user, wishToCopy);
   }
 }
