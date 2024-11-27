@@ -34,7 +34,7 @@ export class UsersService {
   }
 
   async findOne<T extends keyof User>(key: T, param: User[T]): Promise<User> {
-    return await this.usersRepository.findOneBy({ [key]: param });
+    return await this.usersRepository.findOneByOrFail({ [key]: param });
   }
 
   async updateOne(user: User, dto: UpdateUserDto): Promise<User> {
@@ -48,7 +48,7 @@ export class UsersService {
 
     try {
       await this.usersRepository.update(id, updatedUser);
-      return await this.usersRepository.findOneBy({ id });
+      return await this.usersRepository.findOneByOrFail({ id });
     } catch (error) {
       if (error instanceof QueryFailedError) {
         throw new ConflictException(ERROR_MESSAGES.USER_EXISTS);

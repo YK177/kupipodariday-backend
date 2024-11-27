@@ -1,21 +1,24 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
+  Get,
+  Param,
+  Patch,
+  Post,
   Request,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { WishesService } from './wishes.service';
 import { CreateWishDto } from './dto/create-wish.dto';
-import { UpdateWishDto } from './dto/update-wish.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserRequest } from '../types';
+import { WishesInterceptor } from './interceptors/wishes.interceptor';
+import { UpdateWishDto } from './dto/update-wish.dto';
 
 @Controller('wishes')
+@UseInterceptors(WishesInterceptor)
 export class WishesController {
   constructor(private readonly wishesService: WishesService) {}
 
@@ -25,23 +28,41 @@ export class WishesController {
     return this.wishesService.create(user, dto);
   }
 
-  @Get()
-  findAll() {
-    return this.wishesService.findAll();
+  @Get('last')
+  async findLast() {
+    return this.wishesService.findLastWishes();
+  }
+
+  @Get('top')
+  async findTop() {
+    return this.wishesService.findTopWishes();
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {
     return this.wishesService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWishDto: UpdateWishDto) {
-    return this.wishesService.update(+id, updateWishDto);
+  @UseGuards(JwtAuthGuard)
+  update(
+    @Request() { user }: UserRequest,
+    @Param('id') id: string,
+    @Body() dto: UpdateWishDto,
+  ) {
+    return this.wishesService.update(user, +id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.wishesService.remove(+id);
+  @UseGuards(JwtAuthGuard)
+  remove(@Request() { user }: UserRequest, @Param('id') id: string) {
+    return this.wishesService.remove(user, +id);
+  }
+
+  @Post(':id/copy')
+  @UseGuards(JwtAuthGuard)
+  copy(@Request() { user }: UserRequest, @Param('id') id: string) {
+    return this.wishesService.copy(user, +id);
   }
 }
