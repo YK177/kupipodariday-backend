@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { UpdateWishlistDto } from './dto/update-wishlist.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,10 +7,13 @@ import { In, Repository } from 'typeorm';
 import { Wish } from '../wishes/entities/wish.entity';
 import { User } from '../users/entities/user.entity';
 import { ERROR_MESSAGES } from '../constants/error-messages';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class WishlistsService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     @InjectRepository(Wishlist)
     private readonly wishlistRepository: Repository<Wishlist>,
     @InjectRepository(Wish)

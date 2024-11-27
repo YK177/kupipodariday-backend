@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -11,12 +12,15 @@ import { Like, QueryFailedError, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ERROR_MESSAGES } from '../constants/error-messages';
 import { Wish } from '../wishes/entities/wish.entity';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 const SALT_ROUNDS = 10;
 
 @Injectable()
 export class UsersService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
   ) {}

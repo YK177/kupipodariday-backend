@@ -1,5 +1,6 @@
 import {
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,6 +11,8 @@ import { Repository } from 'typeorm';
 import { Wish } from './entities/wish.entity';
 import { User } from '../users/entities/user.entity';
 import { ERROR_MESSAGES } from '../constants/error-messages';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 const NUMBER_OF_LAST_WISHES = 40;
 const NUMBER_OF_TOP_WISHES = 10;
@@ -17,6 +20,7 @@ const NUMBER_OF_TOP_WISHES = 10;
 @Injectable()
 export class WishesService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     @InjectRepository(Wish) private readonly wishRepository: Repository<Wish>,
   ) {}
 

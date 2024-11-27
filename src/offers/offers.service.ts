@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -11,10 +12,13 @@ import { Offer } from './entities/offer.entity';
 import { Wish } from '../wishes/entities/wish.entity';
 import { Repository } from 'typeorm';
 import { ERROR_MESSAGES } from '../constants/error-messages';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class OffersService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     @InjectRepository(Offer)
     private offerRepository: Repository<Offer>,
     @InjectRepository(Wish)
