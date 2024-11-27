@@ -34,7 +34,7 @@ export class UsersService {
   }
 
   async findOne<T extends keyof User>(key: T, param: User[T]): Promise<User> {
-    return await this.usersRepository.findOneByOrFail({ [key]: param });
+    return await this.usersRepository.findOneBy({ [key]: param });
   }
 
   async updateOne(user: User, dto: UpdateUserDto): Promise<User> {
