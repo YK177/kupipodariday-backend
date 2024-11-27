@@ -24,7 +24,7 @@ export class Wish {
 
   @Column({
     type: 'varchar',
-    length: 30,
+    length: 250,
   })
   @Length(1, 250)
   name: string;

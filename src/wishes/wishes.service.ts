@@ -70,7 +70,7 @@ export class WishesService {
 
   async findOne(id: number): Promise<Wish> {
     return await this.wishRepository.findOneOrFail({
-      relations: ['owner'],
+      relations: { owner: true, offers: { user: true } },
       where: { id },
     });
   }

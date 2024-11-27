@@ -12,10 +12,10 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { UsersInterceptor } from './interceptors/users.interceptor';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ERROR_MESSAGES } from '../constants/error-messages';
 import { UserRequest } from '../types';
+import { UsersInterceptor } from './interceptors/users.interceptor';
 
 @Controller('users')
 @UseInterceptors(UsersInterceptor)

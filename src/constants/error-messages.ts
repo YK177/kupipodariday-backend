@@ -4,4 +4,5 @@ export const ERROR_MESSAGES = {
   WISH_NOT_FOUND: 'Карточка не найдена',
   WRONG_LOGIN_PASSWORD: 'Неверный логин или пароль',
   FORBIDDEN: 'Недостаточно прав',
+  TOO_MUCH_OFFER: 'Размер вклада слишком большой',
 };

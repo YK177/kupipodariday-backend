@@ -7,6 +7,7 @@ import {
 import { map, Observable } from 'rxjs';
 import { Wish } from '../entities/wish.entity';
 import { User } from '../../users/entities/user.entity';
+import { Offer } from '../../offers/entities/offer.entity';
 
 @Injectable()
 export class WishesInterceptor implements NestInterceptor {
@@ -20,9 +21,15 @@ export class WishesInterceptor implements NestInterceptor {
     if (Array.isArray(data)) {
       for (const wish of data) {
         this.deleteFields(wish?.owner);
+        wish.offers.forEach((offer: Offer) => {
+          this.deleteFields(offer?.user);
+        });
       }
     } else {
       this.deleteFields(data?.owner);
+      data.offers.forEach((offer: Offer) => {
+        this.deleteFields(offer?.user);
+      });
     }
 
     return data;

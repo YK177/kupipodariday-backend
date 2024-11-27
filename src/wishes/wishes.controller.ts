@@ -14,8 +14,8 @@ import { WishesService } from './wishes.service';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserRequest } from '../types';
-import { WishesInterceptor } from './interceptors/wishes.interceptor';
 import { UpdateWishDto } from './dto/update-wish.dto';
+import { WishesInterceptor } from './interceptors/wishes.interceptor';
 
 @Controller('wishes')
 @UseInterceptors(WishesInterceptor)
