@@ -42,10 +42,11 @@ export class OffersService {
     }
 
     try {
-      const updatedWish = await this.wishRepository.save({ ...wish, raised });
+      const wishToUpdate = await this.wishRepository.save({ ...wish, raised });
+
       return await this.offerRepository.save({
         amount: dto.amount,
-        item: updatedWish,
+        item: wishToUpdate,
         user,
       });
     } catch (error) {

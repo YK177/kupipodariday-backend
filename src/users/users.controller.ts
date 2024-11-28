@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  NotFoundException,
   Param,
   Patch,
   Post,
@@ -13,7 +12,6 @@ import {
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ERROR_MESSAGES } from '../constants/error-messages';
 import { UserRequest } from '../types';
 import { UsersInterceptor } from './interceptors/users.interceptor';
 
@@ -38,13 +36,7 @@ export class UsersController {
 
   @Get(':username')
   async getUserByUsername(@Param('username') username: string) {
-    const user = await this.usersService.findOne('username', username);
-
-    if (!user) {
-      throw new NotFoundException(ERROR_MESSAGES.USER_NOT_FOUND);
-    }
-
-    return user;
+    return await this.usersService.findOne('username', username);
   }
 
   @Post('find')
@@ -53,8 +45,8 @@ export class UsersController {
   }
 
   @Get('me/wishes')
-  getOwnWishes(@Request() { user }: UserRequest) {
-    return this.usersService.findOwnWishes(user.id);
+  async getOwnWishes(@Request() { user }: UserRequest) {
+    return await this.usersService.findOwnWishes(user.id);
   }
 
   @Get(':username/wishes')

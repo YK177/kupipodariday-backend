@@ -20,9 +20,11 @@ export class OffersInterceptor implements NestInterceptor {
     if (Array.isArray(data)) {
       for (const offer of data) {
         this.deleteFields(offer?.user);
+        this.deleteFields(offer?.item?.owner);
       }
     } else {
       this.deleteFields(data?.user);
+      this.deleteFields(data?.item?.owner);
     }
 
     return data;

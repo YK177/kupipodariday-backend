@@ -7,6 +7,7 @@ import {
 import { map, Observable } from 'rxjs';
 import { User } from '../entities/user.entity';
 
+const CREATE_USER_METHOD_NAME = 'signup';
 const GET_MY_PROFILE_METHOD_NAME = 'findMe';
 
 @Injectable()
@@ -34,7 +35,10 @@ export class UsersInterceptor implements NestInterceptor {
   }
 
   private deleteFields(user: User, handler: any) {
-    if (handler.name !== GET_MY_PROFILE_METHOD_NAME) {
+    if (
+      handler.name !== GET_MY_PROFILE_METHOD_NAME &&
+      handler.name !== CREATE_USER_METHOD_NAME
+    ) {
       delete user.email;
     }
     delete user.password;

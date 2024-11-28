@@ -1,9 +1,4 @@
-import {
-  ConflictException,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -30,15 +25,23 @@ export class UsersService {
   }
 
   async create(dto: CreateUserDto): Promise<User> {
-    const hashedPassword = await this.hashPassword(dto.password);
-    return await this.usersRepository.save({
-      ...dto,
-      password: hashedPassword,
-    });
+    try {
+      const hashedPassword = await this.hashPassword(dto.password);
+      return await this.usersRepository.save({
+        ...dto,
+        password: hashedPassword,
+      });
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        if (error.driverError.code === '23505') {
+          throw new ConflictException(ERROR_MESSAGES.USER_EXISTS);
+        }
+      }
+    }
   }
 
   async findOne<T extends keyof User>(key: T, param: User[T]): Promise<User> {
-    return await this.usersRepository.findOneBy({ [key]: param });
+    return await this.usersRepository.findOneByOrFail({ [key]: param });
   }
 
   async updateOne(user: User, dto: UpdateUserDto): Promise<User> {
@@ -55,9 +58,10 @@ export class UsersService {
       return await this.usersRepository.findOneByOrFail({ id });
     } catch (error) {
       if (error instanceof QueryFailedError) {
-        throw new ConflictException(ERROR_MESSAGES.USER_EXISTS);
+        if (error.driverError.code === '23505') {
+          throw new ConflictException(ERROR_MESSAGES.USER_EXISTS);
+        }
       }
-      throw new InternalServerErrorException(error.message);
     }
   }
 
